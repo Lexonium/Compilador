@@ -1,0 +1,16 @@
+C:\Users\Andy\source\repos\Compilador\bin\Debug\net5.0\Compilador.exe
+C:\Users\Andy\source\repos\Compilador\bin\Debug\net5.0\Compilador.deps.json
+C:\Users\Andy\source\repos\Compilador\bin\Debug\net5.0\Compilador.runtimeconfig.json
+C:\Users\Andy\source\repos\Compilador\bin\Debug\net5.0\Compilador.runtimeconfig.dev.json
+C:\Users\Andy\source\repos\Compilador\bin\Debug\net5.0\Compilador.dll
+C:\Users\Andy\source\repos\Compilador\bin\Debug\net5.0\ref\Compilador.dll
+C:\Users\Andy\source\repos\Compilador\bin\Debug\net5.0\Compilador.pdb
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.csproj.AssemblyReference.cache
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.AssemblyInfoInputs.cache
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.AssemblyInfo.cs
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.csproj.CoreCompileInputs.cache
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.dll
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\ref\Compilador.dll
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.pdb
+C:\Users\Andy\source\repos\Compilador\obj\Debug\net5.0\Compilador.genruntimeconfig.cache
