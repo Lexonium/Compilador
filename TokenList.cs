@@ -6,60 +6,52 @@ using System.Threading.Tasks;
 
 namespace Compilador
 {
-    class TokenList
+    public class TokenList
     {
-        Dictionary<string, int> ListaTokens = new Dictionary<string, int> {
-            //INSTRUCCIONES 1-9
-            {"START",1 },
-            {"END",2},
-            {"READ", 3},
-            {"PRINT", 4},
-            {"PRINTNL", 5 },
-                //CONDICIONALES 6-7
-            {"IF",6 },
-            {"ELSE",7 },
-                //FIN CONDICIONALES
-                //CICLOS 8-9
-            {"FOR",8 },
-            {"WHILE",9 },
-                //FIN CICLOS
-            //FIN INSTRUCCIONES
+        public List<Token> ListaTokens { get; set; }
+        
+        public TokenList()
+        {
+            ListaTokens = new List<Token>();
+            ListaTokens.Add(new Token("START", 1, "PRESERVADA"));
+            ListaTokens.Add(new Token("END", 2, "PRESERVADA"));
+            ListaTokens.Add(new Token("READ", 3, "PRESERVADA"));
+            ListaTokens.Add(new Token("PRINT", 4, "PRESERVADA"));
+            ListaTokens.Add(new Token("PRINTNL", 5, "PRESERVADA"));
+            ListaTokens.Add(new Token("IF", 6, "CONDICIONAL"));
+            ListaTokens.Add(new Token("ELSE", 7, "SINO"));
+            ListaTokens.Add(new Token("FOR", 8, "PRESERVADA"));
+            ListaTokens.Add(new Token("WHILE", 9, "PRESERVADA"));
+            ListaTokens.Add(new Token("INT", 10, "PRESERVADA"));
+            ListaTokens.Add(new Token("DOUBLE", 11, "PRESERVADA"));
+            ListaTokens.Add(new Token("STRING", 12, "PRESERVADA"));
+            ListaTokens.Add(new Token("ARRAY", 13, "PRESERVADA"));
+            ListaTokens.Add(new Token("VARIABLE", 14, "PRESERVADA"));
+            ListaTokens.Add(new Token("DEFINICION", 15, "PRESERVADA"));
+            ListaTokens.Add(new Token("COMENTARIO", 16, "PRESERVADA"));
+            ListaTokens.Add(new Token("CONSTANTE", 17, "PRESERVADA"));
+            ListaTokens.Add(new Token("==", 18, "PRESERVADA"));
+            ListaTokens.Add(new Token("!=", 19, "PRESERVADA"));
+            ListaTokens.Add(new Token("<=", 20, "PRESERVADA"));
+            ListaTokens.Add(new Token(">=", 21, "PRESERVADA"));
+            ListaTokens.Add(new Token("<", 22, "PRESERVADA"));
+            ListaTokens.Add(new Token(">", 23, "PRESERVADA"));
+            ListaTokens.Add(new Token("AND", 24, "PRESERVADA"));
+            ListaTokens.Add(new Token("OR", 25, "PRESERVADA"));
+            ListaTokens.Add(new Token("NOT", 26, "PRESERVADA"));
+            ListaTokens.Add(new Token("=", 27, "PRESERVADA"));
+            ListaTokens.Add(new Token("+", 28, "PRESERVADA"));
+            ListaTokens.Add(new Token("-", 29, "PRESERVADA"));
+            ListaTokens.Add(new Token("*", 30, "PRESERVADA"));
+            ListaTokens.Add(new Token("/", 31, "PRESERVADA"));
+            ListaTokens.Add(new Token("(", 32, "PRESERVADA"));
+            ListaTokens.Add(new Token(")", 33, "PRESERVADA"));
+            ListaTokens.Add(new Token("{", 34, "PRESERVADA"));
+            ListaTokens.Add(new Token("}", 35, "PRESERVADA"));
+            ListaTokens.Add(new Token("\"", 36, "PRESERVADA"));
+            ListaTokens.Add(new Token("\"", 37, "PRESERVADA"));
+            ListaTokens.Add(new Token(";", 38, "PRESERVADA"));
 
-            //DECLARACION/DETECCION DE VARIABLES 10-17
-            {"INT",10 },
-            {"DOUBLE",11},
-            {"STRING",12},
-            {"ARRAY",13}, // => Tendria que revisar con un metodo, seria TIPO[CANTIDAD]
-            {"VARIABLE",14 }, // => para poner este token, seria revisar si esa variable especifica ha sido definida anteriormente.
-            {"DEFINICION",15 }, // => Despues revisar que despues del tipo sea palabras y no nomas letras o alguna condicional etc.
-            {"COMENTARIO",16}, //PONER un true que si se detecta $ todo lo que le siga hasta encontrar otro $ es comentario
-            {"constante",17 }, //Revisar con un tryparse si se puede hacer en int o double.
-
-            //FIN DECLARACION/DETECCION VARIABLES
-            //OPERADORES RELACIONALES 18-26
-            {"==",18 },
-            {"!=",19},
-            {"<=",20 },
-            {">=",21 },
-            {"<",22 },
-            {">",23 },
-            {"AND",24},
-            {"OR",25},
-            {"NOT",26},
-            //FIN OPERADORES RELACIONALES
-
-            //OPERADORES ARITMETICOS Y CONTENEDORES 27-36
-            {"=",27 },
-            {"+",28 },
-            {"-",29 },
-            {"*",30 },
-            {"/",31 },
-            {"%",32 },
-            {"(",33 },
-            {")",34 },
-            {"{",35 },
-            {"}",36 },
-            //FIN OPERADORES ARITMETICOS Y CONTENEDORES
-        };
+        }
     }
 }
