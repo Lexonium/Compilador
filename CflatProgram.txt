@@ -1,13 +1,13 @@
 ﻿START
 INT i;
-INT[10] matriculas;
+INT matriculas[10];
 i = 0;
 FOR (i : 10)
 {
 	PRINTNL "Inserte Matricula " , i;
 	READ matricula[i]
 }
-i=0;
+i = 0;
 FOR (i : 10)
 {
 	PRINTNL "Matricula [" , i , "]: ", matricula[i];
