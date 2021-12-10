@@ -1,0 +1,764 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Compilador
+{
+    
+    public class Traductor
+    {
+        AnalizadorLexico analizlexico = new AnalizadorLexico();
+        Logger log = new Logger();
+        static Token tActual = new Token();
+        static Token tSiguiente = new Token();
+        List<int> listaDeclaracion = new List<int> { 9, 10, 11,14,37,39 };
+        List<int> listaInstruccion = new List<int> { 2, 3, 4, 5, 7, 8, 13 ,1};
+        List<int> listaAROP = new List<int> { 27, 28, 31, 16, 13, 42 };
+        List<int> listaFACTOR = new List<int> { 31, 16, 13, 42 };
+        List<int> listaCondicion = new List<int> { 16, 42, 13 };
+        List<int> listaComparativos = new List<int> { 17, 18, 19, 20, 21, 22 };
+        List<ElementoSegmentoDeCodigo> codigoAssembler = new List<ElementoSegmentoDeCodigo>();
+        ElementoSegmentoDeCodigo elemTemp = new ElementoSegmentoDeCodigo();
+        ElementoSegmentoDeCodigo elemTemp2 = new ElementoSegmentoDeCodigo();
+        ElementoSegmentoDeCodigo elemTemp3 = new ElementoSegmentoDeCodigo();
+        int x = 0,segCodigoSize=0,contEtiquetas=0;
+        List<Etiquetas> listaEtiquetas = new List<Etiquetas>();
+        string nom = "eTiQuEtA";
+        Stack<int> contadorEtiquetas = new Stack<int>();
+        Stack<ElementoSegmentoDeCodigo> stackCodigo = new Stack<ElementoSegmentoDeCodigo>();
+
+        public void main()
+        {
+            analizlexico.reiniciarLector();
+            lexico();
+            lexico();
+            while (listaDeclaracion.Contains(tSiguiente.Codigo))
+            {
+                //traducirDeclaracion();
+                lexico();
+            }
+            Console.WriteLine(analizlexico.variables.Elementos[0].VariableName); //YA CON ESTO TENEMOS TODOS LOS DEFINE Y LO NECESARIO PARA IMPRIMIR EL TSNV
+            log.PrintTSNV(analizlexico.variables.Elementos);
+
+            while (tSiguiente.Codigo != 43) {
+                if(tSiguiente.Codigo == 37)
+                {
+                    lexico();
+                }
+                while (listaInstruccion.Contains(tSiguiente.Codigo))
+                {
+                   instruccion();
+                }
+            }
+            log.PrintSegmentoDeCodigo(codigoAssembler);
+        }
+
+        private void instruccion()
+        {
+            switch (tSiguiente.Codigo)
+            { //2, 3, 4, 5, 7, 8, 13
+                case 1: {
+                        elemTemp.NumeroDeCodigo = 49;
+                        elemTemp.PesoComando = 1;
+                        segCodigoSize += 1;
+                        lexico();
+
+                        break;
+                    }
+                case 2:
+                    { //READ
+                        do
+                        { //READ {CADENA} VARIABLE
+                            lexico();
+                            if (tSiguiente.Codigo == 42)
+                            {
+                                elemTemp.NumeroDeCodigo = 41;
+                                elemTemp.ValorConstante = tSiguiente.Valor;
+                                elemTemp.PesoComando = 2;
+                                codigoAssembler.Add(elemTemp);
+                                lexico();
+                                segCodigoSize = tSiguiente.Valor.Length + 2;
+                            }
+                            switch (int.Parse(tSiguiente.Tipo))
+                            {
+                                case 1:
+                                    elemTemp.NumeroDeCodigo = 35;
+                                    elemTemp.PesoComando = 3;
+                                    x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                    elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                    elemTemp.VariableType = 1;
+                                    segCodigoSize += 3;
+                                    break;
+                                case 2:
+                                    elemTemp.NumeroDeCodigo = 36;
+                                    elemTemp.PesoComando = 3;
+                                    x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                    elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                    elemTemp.VariableType = 2;
+                                    segCodigoSize += 3;
+                                    break;
+                                case 3:
+                                    elemTemp.NumeroDeCodigo = 37;
+                                    elemTemp.PesoComando = 3;
+                                    x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                    elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                    elemTemp.VariableType = 3;
+                                    segCodigoSize += 3;
+                                    break;
+                                case 11:
+                                    elemTemp.NumeroDeCodigo = 38;
+                                    elemTemp.PesoComando = 3;
+                                    x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                    elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                    elemTemp.VariableType = 11;
+                                    segCodigoSize += 3;
+                                    break;
+                                case 12:
+                                    elemTemp.NumeroDeCodigo = 39;
+                                    elemTemp.PesoComando = 3;
+                                    x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                    elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                    elemTemp.VariableType = 12;
+                                    segCodigoSize += 3;
+                                    break;
+                                case 13:
+                                    elemTemp.NumeroDeCodigo = 40;
+                                    elemTemp.PesoComando = 3;
+                                    x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                    elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                    elemTemp.VariableType = 13;
+                                    segCodigoSize += 3;
+                                    break;
+                            }
+                            codigoAssembler.Add(elemTemp);
+                            lexico();
+                        } while (tSiguiente.Codigo == 39);
+                        lexico();
+
+                        break;
+                    }
+                case 3:
+                    {//PRINT
+                        do
+                        {
+                            lexico();
+                            if (tSiguiente.Codigo == 42)
+                            {
+                                elemTemp.NumeroDeCodigo = 41;
+                                elemTemp.ValorConstante = tSiguiente.Valor;
+                                elemTemp.PesoComando = 2;
+                                codigoAssembler.Add(elemTemp);
+                                lexico();
+                                segCodigoSize = tSiguiente.Valor.Length + 2;
+                            }
+                            else if (tSiguiente.Codigo == 13)
+                            {
+                                switch (int.Parse(tSiguiente.Tipo))
+                                {
+                                    case 1:
+                                        elemTemp.NumeroDeCodigo = 42;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 1;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 2:
+                                        elemTemp.NumeroDeCodigo = 43;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 2;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 3:
+                                        elemTemp.NumeroDeCodigo = 44;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 3;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 11:
+                                        elemTemp.NumeroDeCodigo = 45;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 11;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 12:
+                                        elemTemp.NumeroDeCodigo = 46;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 12;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 13:
+                                        elemTemp.NumeroDeCodigo = 47;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 13;
+                                        segCodigoSize += 3;
+                                        break;
+                                }
+                                codigoAssembler.Add(elemTemp);
+                                lexico();
+                            }
+                        } while (tSiguiente.Codigo == 39);
+                        lexico();
+                        break;
+                    }
+                case 4:
+                    { //PRINTNL
+                        do
+                        {
+                            lexico();
+                            if (tSiguiente.Codigo == 42)
+                            {
+                                elemTemp.NumeroDeCodigo = 41;
+                                elemTemp.ValorConstante = tSiguiente.Valor;
+                                elemTemp.PesoComando = 2;
+                                codigoAssembler.Add(elemTemp);
+                                segCodigoSize += tSiguiente.Valor.Length + 2;
+                                lexico();  
+                            }
+                            else if (tSiguiente.Codigo == 13)
+                            {
+                                switch (int.Parse(tSiguiente.Tipo))
+                                {
+                                    case 1:
+                                        elemTemp.NumeroDeCodigo = 42;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 1;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 2:
+                                        elemTemp.NumeroDeCodigo = 43;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 2;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 3:
+                                        elemTemp.NumeroDeCodigo = 44;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 3;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 11:
+                                        elemTemp.NumeroDeCodigo = 45;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 11;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 12:
+                                        elemTemp.NumeroDeCodigo = 46;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 12;
+                                        segCodigoSize += 3;
+                                        break;
+                                    case 13:
+                                        elemTemp.NumeroDeCodigo = 47;
+                                        elemTemp.PesoComando = 3;
+                                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                                        elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                                        elemTemp.VariableType = 13;
+                                        segCodigoSize += 3;
+                                        break;
+                                }
+                                codigoAssembler.Add(elemTemp);
+                                lexico();
+                            }
+                        } while (tSiguiente.Codigo == 39);
+                        elemTemp.NumeroDeCodigo = 48;
+                        elemTemp.PesoComando = 1;
+                        codigoAssembler.Add(elemTemp);
+                        segCodigoSize += 1;
+                        lexico();
+                        break;
+                    }
+                case 5:
+                    { //IF
+                        lexico();
+                        TipoIF(tSiguiente.Codigo);
+                        switch (tSiguiente.Codigo)
+                        {
+                            case 17: //EQUAL
+                                lexico();
+                                TipoIF(tSiguiente.Codigo);
+                                elemTemp.NumeroDeCodigo = 8;
+                                elemTemp.PesoComando = 1;
+                                segCodigoSize++;
+                                break;
+                            case 18: //DIFFERENT
+                                lexico();
+                                TipoIF(tSiguiente.Codigo);
+                                elemTemp.NumeroDeCodigo = 9;
+                                elemTemp.PesoComando = 1;
+                                segCodigoSize++;
+                                break;
+                            case 19: //LESEQUAL
+                                lexico();
+                                TipoIF(tSiguiente.Codigo);
+                                elemTemp.NumeroDeCodigo = 11;
+                                elemTemp.PesoComando = 1;
+                                segCodigoSize++;
+                                break;
+                            case 20://GREATEQUAL
+                                lexico();
+                                TipoIF(tSiguiente.Codigo);
+                                elemTemp.NumeroDeCodigo = 13;
+                                elemTemp.PesoComando = 1;
+                                segCodigoSize++;
+                                break;
+                            case 21://LESS
+                                lexico();
+                                TipoIF(tSiguiente.Codigo);
+                                elemTemp.NumeroDeCodigo = 10;
+                                elemTemp.PesoComando = 1;
+                                segCodigoSize++;
+                                break;
+                            case 22://GREATER
+                                lexico();
+                                TipoIF(tSiguiente.Codigo);
+                                elemTemp.NumeroDeCodigo = 12;
+                                elemTemp.PesoComando = 1;
+                                segCodigoSize++;
+                                break;
+                        }
+                        codigoAssembler.Add(elemTemp);
+                        lexico(); //AQUI ESTOY EN EL CORCHETE ABIERTO DEL IF, //CREO EL JMPF
+                        elemTemp.NumeroDeCodigo = 17;
+                        elemTemp.PesoComando = 3;
+                        elemTemp.ValorConstante = nom + contEtiquetas.ToString();
+                        listaEtiquetas.Add(new Etiquetas(nom + contEtiquetas.ToString()));
+                        contadorEtiquetas.Push(contEtiquetas);
+                        contEtiquetas++;
+                        segCodigoSize += 3;
+                        codigoAssembler.Add(elemTemp);
+                        lexico(); //ME PASO A LA SIGUIENTE INSTRUCCION
+                       
+                        instruccion(); //HAGO TODAS LAS INSTRUCCIONES y REGRESO EN EL CORCHETE CERRADO DEL IF
+                        //HAGO EL JMP TRUE
+                        lexico(); //AQUI ESTOY EN EL CORCHETE CERRADO DEL IF, //CREO EL JMPT
+                        elemTemp.NumeroDeCodigo = 15;
+                        elemTemp.PesoComando = 3;
+                        elemTemp.ValorConstante = nom + contEtiquetas.ToString();
+                        listaEtiquetas.Add(new Etiquetas(nom + contEtiquetas.ToString()));
+                        contadorEtiquetas.Push(contEtiquetas);
+                        contEtiquetas++;
+                        segCodigoSize += 3;
+                        codigoAssembler.Add(elemTemp);
+                        lexico();
+                        if (tSiguiente.Codigo == 6)
+                        {
+                            listaEtiquetas[contadorEtiquetas.Pop()].DireccionEtiqueta = segCodigoSize;
+                            instruccion();
+                        }
+                        listaEtiquetas[contadorEtiquetas.Pop()].DireccionEtiqueta = segCodigoSize;
+                        lexico();
+                        break;
+                    }
+                case 7:
+                    { //FOR
+                        listaEtiquetas.Add(new Etiquetas(nom+contEtiquetas.ToString(),segCodigoSize));
+                        contEtiquetas++;
+                        contadorEtiquetas.Push(contEtiquetas);
+                        lexico();
+                        lexico();
+                        stackCodigo.Push(tipodePUSH(int.Parse(tSiguiente.Tipo)));
+                        lexico();
+                        stackCodigo.Push(tipodePUSH(int.Parse(tSiguiente.Tipo)));
+                        lexico();
+                        lexico();
+                        instruccion();
+                        elemTemp2 = stackCodigo.Pop();
+                        elemTemp.NumeroDeCodigo = 6;
+                        elemTemp.PesoComando = 3;
+                        elemTemp.DireccionVariable = stackCodigo.Peek().DireccionVariable;
+                        codigoAssembler.Add(elemTemp);
+                        segCodigoSize += 3;
+                        codigoAssembler.Add(stackCodigo.Pop());
+                        segCodigoSize += 3;
+                        codigoAssembler.Add(elemTemp2);
+                        segCodigoSize += elemTemp.PesoComando;
+                        elemTemp.NumeroDeCodigo = 10;
+                        elemTemp.PesoComando = 1;
+                        segCodigoSize += 1;
+                        codigoAssembler.Add(elemTemp);
+                        elemTemp.NumeroDeCodigo = 15;
+                        elemTemp.PesoComando = 3;
+                        elemTemp.ValorConstante = listaEtiquetas[contadorEtiquetas.Pop()].DireccionEtiqueta.ToString();
+                        segCodigoSize += 3;
+                        codigoAssembler.Add(elemTemp);
+                        lexico();
+
+
+
+                        break;
+                    }
+                case 8:
+                    {//WHILE
+                        listaEtiquetas.Add(new Etiquetas(nom + contEtiquetas.ToString(), segCodigoSize));
+                        contEtiquetas++;
+                        contadorEtiquetas.Push(contEtiquetas);
+                        lexico();
+                        lexico();
+                        stackCodigo.Push(tipodePUSH(int.Parse(tSiguiente.Tipo)));
+                        lexico();
+                        elemTemp3 = tipoComparacion(tSiguiente.Codigo);
+                        lexico();
+                        stackCodigo.Push(tipodePUSH(int.Parse(tSiguiente.Tipo)));
+                        instruccion();
+                        elemTemp2 = stackCodigo.Pop();
+                        elemTemp = stackCodigo.Pop();
+                        codigoAssembler.Add(elemTemp);
+                        segCodigoSize += elemTemp.PesoComando;
+                        codigoAssembler.Add(elemTemp2);
+                        segCodigoSize += elemTemp2.PesoComando;
+                        codigoAssembler.Add(elemTemp3);
+                        segCodigoSize += elemTemp3.PesoComando;
+                        elemTemp.NumeroDeCodigo = 15;
+                        elemTemp.PesoComando = 3;
+                        elemTemp.ValorConstante = listaEtiquetas[contadorEtiquetas.Pop()].DireccionEtiqueta.ToString();
+                        segCodigoSize += 3;
+                        break;
+                    }
+                case 13:
+                    { //VARIABLE
+                        elemTemp3 = tipodePop(int.Parse(tSiguiente.Tipo));
+                        lexico();
+                        lexico();
+                        while (tSiguiente.Codigo != 37)
+                        {
+                            elemTemp=tipodePUSH(tSiguiente.Codigo);
+                            segCodigoSize += 3;
+                            codigoAssembler.Add(elemTemp);
+                            //lexico();
+                            if (tSiguiente.Codigo != 37)
+                            {
+                                elemTemp2 = tipoOperacion(tSiguiente.Codigo);
+                                elemTemp = tipodePUSH(tSiguiente.Codigo);
+                                segCodigoSize += 3;
+                                codigoAssembler.Add(elemTemp);
+                                segCodigoSize += 1;
+                                codigoAssembler.Add(elemTemp2);
+                            }
+                        }
+                        codigoAssembler.Add(elemTemp3);
+                        segCodigoSize += 3;
+                        lexico();
+                        break;
+                    }
+
+            }
+        }
+
+        private ElementoSegmentoDeCodigo tipoComparacion(int codigo)
+        {
+            ElementoSegmentoDeCodigo temp = new ElementoSegmentoDeCodigo();
+            switch (codigo)
+            {
+                case 17:
+                    temp.NumeroDeCodigo = 8;
+                    temp.PesoComando = 1;
+                    break;
+                case 18:
+                    temp.NumeroDeCodigo = 9;
+                    temp.PesoComando = 1;
+                    break;
+                case 19:
+                    temp.NumeroDeCodigo = 11;
+                    temp.PesoComando = 1;
+                    break;
+                case 20:
+                    temp.NumeroDeCodigo = 13;
+                    temp.PesoComando = 1;
+                    break;
+                case 21:
+                    temp.NumeroDeCodigo = 10;
+                    temp.PesoComando = 1;
+                    break;
+                case 22:
+                    temp.NumeroDeCodigo = 12;
+                    temp.PesoComando = 1;
+                    break;
+
+
+
+            }
+            return temp;
+        }
+
+        private ElementoSegmentoDeCodigo tipoOperacion(int codigo)
+        {
+            ElementoSegmentoDeCodigo temp = new ElementoSegmentoDeCodigo();
+            switch (codigo)
+            {
+                case 27:
+                    temp.NumeroDeCodigo = 1;
+                    temp.PesoComando = 1;
+                    break;
+                case 28:
+                    temp.NumeroDeCodigo = 2;
+                    temp.PesoComando = 1;
+                    break;
+                case 29:
+                    temp.NumeroDeCodigo = 3;
+                    temp.PesoComando = 1;
+                    break;
+                case 30:
+                    temp.NumeroDeCodigo = 4;
+                    temp.PesoComando = 1;
+                    break;
+                
+            }
+            lexico();
+            return temp;
+        }
+
+        void lexico()
+        {
+            tActual = tSiguiente;
+            tSiguiente = analizlexico.siguiente();
+        }
+        void TipoIF(int codigo)
+        {
+            switch (codigo)
+            {
+                case 13:
+                    switch (int.Parse(tSiguiente.Tipo))
+                    {
+                        case 1:
+                            elemTemp.NumeroDeCodigo = 19;
+                            elemTemp.PesoComando = 3;
+                            x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                            elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                            elemTemp.VariableType = 1;
+                            segCodigoSize += 3;
+                            break;
+                        case 2:
+                            elemTemp.NumeroDeCodigo = 20;
+                            elemTemp.PesoComando = 3;
+                            x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                            elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                            elemTemp.VariableType = 2;
+                            segCodigoSize += 3;
+                            break;
+                        case 3:
+                            elemTemp.NumeroDeCodigo = 21;
+                            elemTemp.PesoComando = 3;
+                            x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                            elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                            elemTemp.VariableType = 3;
+                            segCodigoSize += 3;
+                            break;
+                        case 11:
+                            elemTemp.NumeroDeCodigo = 22;
+                            elemTemp.PesoComando = 3;
+                            x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                            elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                            elemTemp.VariableType = 11;
+                            segCodigoSize += 3;
+                            break;
+                        case 12:
+                            elemTemp.NumeroDeCodigo = 23;
+                            elemTemp.PesoComando = 3;
+                            x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                            elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                            elemTemp.VariableType = 12;
+                            segCodigoSize += 3;
+                            break;
+                        case 13:
+                            elemTemp.NumeroDeCodigo = 24;
+                            elemTemp.PesoComando = 3;
+                            x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                            elemTemp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                            elemTemp.VariableType = 13;
+                            segCodigoSize += 3;
+                            break;
+                    }
+                    break;
+                case 16:
+                    switch (int.Parse(tSiguiente.Tipo))
+                    {
+                        case 1:
+                            elemTemp.NumeroDeCodigo = 25;
+                            elemTemp.PesoComando = 5;
+                            elemTemp.ValorConstante = tSiguiente.Valor;
+                            elemTemp.VariableType = 1;
+                            segCodigoSize += 5;
+                            break;
+                        case 2:
+                            elemTemp.NumeroDeCodigo = 26;
+                            elemTemp.PesoComando = 9;
+                            elemTemp.ValorConstante = tSiguiente.Valor;
+                            elemTemp.VariableType = 2;
+                            segCodigoSize += 9;
+                            break;
+                    }
+                    break;
+                case 42:
+                    elemTemp.NumeroDeCodigo = 27;
+                    elemTemp.PesoComando = tSiguiente.Valor.Length + 2;
+                    elemTemp.ValorConstante = tSiguiente.Valor;
+                    elemTemp.VariableType = 3;
+                    segCodigoSize += tSiguiente.Valor.Length + 2;
+                    break;
+            }
+            codigoAssembler.Add(elemTemp);
+            lexico();
+        }
+        ElementoSegmentoDeCodigo tipodePop(int tipo)
+        {
+            ElementoSegmentoDeCodigo temp = new ElementoSegmentoDeCodigo();
+            
+                switch (tipo)
+                {
+                    case 1:
+                        temp.NumeroDeCodigo = 28;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 1;
+                        //segCodigoSize += 3;
+                        break;
+                    case 2:
+                        temp.NumeroDeCodigo = 29;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 2;
+                        //segCodigoSize += 3;
+                        break;
+                    case 3:
+                        temp.NumeroDeCodigo = 30;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 3;
+                        //segCodigoSize += 3;
+                        break;
+                    case 11:
+                        temp.NumeroDeCodigo = 31;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 11;
+                        //segCodigoSize += 3;
+                        break;
+                    case 12:
+                        temp.NumeroDeCodigo = 32;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 12;
+                        //segCodigoSize += 3;
+                        break;
+                    case 13:
+                        temp.NumeroDeCodigo = 33;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 13;
+                        //segCodigoSize += 3;
+                        break;
+                }
+            
+            return temp;
+        }
+        ElementoSegmentoDeCodigo tipodePUSH(int tipo)
+        {
+            ElementoSegmentoDeCodigo temp = new ElementoSegmentoDeCodigo();
+            if (tSiguiente.Codigo == 13)
+            {
+                switch (tipo)
+                {
+                    case 1:
+                        temp.NumeroDeCodigo = 19;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 1;
+                        //segCodigoSize += 3;
+                        break;
+                    case 2:
+                        temp.NumeroDeCodigo = 20;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 2;
+                        //segCodigoSize += 3;
+                        break;
+                    case 3:
+                        temp.NumeroDeCodigo = 21;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 3;
+                        //segCodigoSize += 3;
+                        break;
+                    case 11:
+                        temp.NumeroDeCodigo = 22;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 11;
+                        //segCodigoSize += 3;
+                        break;
+                    case 12:
+                        temp.NumeroDeCodigo = 23;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 12;
+                        //segCodigoSize += 3;
+                        break;
+                    case 13:
+                        temp.NumeroDeCodigo = 24;
+                        temp.PesoComando = 3;
+                        x = analizlexico.variables.buscarVariable(tSiguiente.Lexema);
+                        temp.DireccionVariable = analizlexico.variables.Elementos[x].Direccion;
+                        temp.VariableType = 13;
+                        //segCodigoSize += 3;
+                        break;
+                }
+            }
+            if(tSiguiente.Codigo == 16)
+            {
+                switch (int.Parse(tSiguiente.Tipo)) {
+                    case 1:
+                        temp.NumeroDeCodigo = 25;
+                        temp.PesoComando = 5;
+                        temp.ValorConstante = tSiguiente.Valor;
+                        temp.VariableType = 1;
+                        break;
+                    case 2:
+                        temp.NumeroDeCodigo = 26;
+                        temp.PesoComando = 9;
+                        temp.ValorConstante = tSiguiente.Valor;
+                        temp.VariableType = 2;
+                        break;
+                }
+
+                
+            }
+            lexico();
+            return temp;
+        }
+    }
+}

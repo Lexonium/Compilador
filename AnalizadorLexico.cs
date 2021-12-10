@@ -9,176 +9,461 @@ namespace Compilador
 {
     public class AnalizadorLexico
     {
-        TokenList Lista = new TokenList(); 
-        string linea,temp, acum;
-        StreamReader archivo = new StreamReader(PathRepository.CrearPath(@"\CflatProgram.txt"));
-        int contLineas = 0, pActual,pAnterior,x=0;
+        public TokenList Lista = new TokenList();
+        string linea, temp, acum, temp2, mensaje,acum2;
+        static StreamReader archivo = new StreamReader(PathRepository.CrearPath(@"\CflatProgram.txt"));
+        int contLineas = 1, contColumna = 1, pActual, pAnterior = -1, x = 0, contComillas = 0, tipoVar = 0, direccion = 0, dirtemp = 0,arrsize=0;
         List<string> Variables = new List<string>();
         string[] defArreglo = new string[4];
-        List<Token> tokens = new List<Token>();
-        Token tokenTemp = new Token();
-        public void Run()
+        public SegmentoDeDatos variables = new SegmentoDeDatos();
+        static char caracter = (char)archivo.Read();
+        public List<Token> listaATraducir = new List<Token>();
+        public Token siguiente()
         {
-            foreach(Token token in Lista.ListaTokens)
-            {
-                token.imprimir();
+            Token tokenTemp = new Token();
+            while (caracter == ' ' || caracter=='\n' || caracter == '\t') {
+                //While para saltar los espacios en blanco
+                sigChar();
             }
+            if (caracter == '$') {
+                sigChar();
+                while (caracter != '$') {
+                    sigChar();
+                }
+                sigChar();
+                while (caracter == ' ' || caracter == '\n' || caracter == '\t')
+                {
+                    //While para saltar los espacios en blanco
+                    sigChar();
+                }
+            }
+            tokenTemp.Linea = contLineas;
+            tokenTemp.Columna = contColumna;
+            //ASIGNACION DE LINEA Y COLUMNA DEL TOKEN QUE SE VA IDENTIFICAR
+            if (char.IsLetter(caracter))
+            {   //LO MANDA A UN METODO QUE REVISA QUE TIPO DE PALABRA ES (RESERVADA/VARIABLE/IDENTIFIER)
+                esPalabra(tokenTemp);
+            }
+            else if (char.IsNumber(caracter))
+            {   //LO MANDA PARA REVISAR QUE TIPO DE CONSTANTE ES INT o DOUBLE
+                tokenTemp.Codigo = 16;
+                pAnterior = 16;
+                esNumero(tokenTemp);
+            }
+            else switch (caracter) {
+                    case '=':
+                        sigChar();
+                        if (caracter == '=')
+                        { //es un condicional igual
+                            tokenTemp.Lexema = "==";
+                            tokenTemp.Codigo = 17;
+                            pAnterior = 17;
+                        }
+                        else {
+                            //es un igual de asignacion
+                            tokenTemp.Lexema = "=";
+                            tokenTemp.Codigo = 26;
+                            pAnterior = 26;
+                        }
+                        break;
+                    case '<':
+                        sigChar();
+                        if (caracter == '=')
+                        {
+                            //es un menorigual que
+                            tokenTemp.Lexema = "<=";
+                            tokenTemp.Codigo = 19;
+                            pAnterior = 19;
+                        }
+                        else {
+                            //es un menor que
+                            tokenTemp.Lexema = "<";
+                            tokenTemp.Codigo = 21;
+                            pAnterior = 21;
+                        }
+                        break;
+                    case '>':
+                        sigChar();
+                        if (caracter == '=')
+                        {
+                            //es un mayor igual que
+                            tokenTemp.Lexema = ">=";
+                            tokenTemp.Codigo = 20;
+                            pAnterior = 20;
+
+                        }
+                        else {
+                            //es un mayor que
+                            tokenTemp.Lexema = ">";
+                            tokenTemp.Codigo = 22;
+                            pAnterior = 22;
+                        }
+                        break;
+                    case '!':
+                        sigChar();
+                        if (caracter == '=')
+                        {
+                            //es un diferente que
+                            tokenTemp.Lexema = "!=";
+                            tokenTemp.Codigo = 18;
+                            pAnterior = 18;
+                        }
+                        else { //que hace una exclamacion solito en el codigo?
+                            errorLexico("No hay un comando con este simbolo [!]",tokenTemp);
+                        }
+                        break;
+                    case '"':
+                        sigChar();
+                        while (caracter!= '"') {
+                            //WHILE PARA AGARRAR TODA LA CADENA
+                            if (caracter == '\n')
+                            { //REVISA QUE NO SE HAGA UN SALTO DE LINEA DENTRO DE LA CADENA
+                                errorLexico("Una cadena no puede tomar mas de una linea", tokenTemp);
+                                acum = "";
+                                break;
+                            }
+                            else
+                            {   //VA ACUMULANDO LA CADENA
+                                acum += caracter;
+                            }
+                            sigChar();
+                        }
+                        if (caracter =='"') {
+                            //CREA EL TOKEN DE LA CADENA
+                            acum += caracter;
+                            tokenTemp.Codigo = 42;
+                            pAnterior = 42;
+                            tokenTemp.Lexema = "CADENA";
+                            tokenTemp.Valor = acum;
+                            tokenTemp.Tipo = "3";
+                            acum = "";
+                        }
+                        sigChar();
+                        break;
+                    case '+': //TOKEN DEL OPERADOR MAS
+                        tokenTemp.Lexema = "+";
+                        tokenTemp.Codigo = 27;
+                        pAnterior = 27;
+                        sigChar();
+                        break;
+                    case '-': //TOKEN DEL OPERADOR MENOS
+                        tokenTemp.Lexema = "-";
+                        tokenTemp.Codigo = 28;
+                        pAnterior = 28;
+                        sigChar();
+                        break;
+                    case '*': //TOKEN DEL OPERADOR POR
+                        tokenTemp.Lexema = "*";
+                        tokenTemp.Codigo = 29;
+                        pAnterior = 29;
+                        sigChar();
+                        break;
+                    case '/': //TOKEN DEL OPERADOR ENTRE
+                        tokenTemp.Lexema = "/";
+                        tokenTemp.Codigo = 30;
+                        pAnterior = 30;
+                        sigChar();
+                        break;
+                    case '(': //TOKEN DE ABRIR PARENTESIS
+                        tokenTemp.Lexema = "(";
+                        tokenTemp.Codigo = 31;
+                        pAnterior = 31;
+                        sigChar();
+                        break;
+                    case ')': //TOKEN DE CERRAR PARENTESIS
+                        tokenTemp.Lexema = ")";
+                        tokenTemp.Codigo = 32;
+                        pAnterior = 32;
+                        sigChar();
+                        break;
+                    case '{': // TOKEN DE ABRIR CORCHETES
+                        tokenTemp.Lexema = "{";
+                        tokenTemp.Codigo = 33;
+                        pAnterior = 33;
+                        sigChar();
+                        break;
+                    case '}': //TOKEN DE CERRRAR CORCHETES
+                        tokenTemp.Lexema = "}";
+                        tokenTemp.Codigo = 34;
+                        pAnterior = 34;
+                        sigChar();
+                        break;
+                    case ';': //TOKEN PUNTOCOMA
+                        tokenTemp.Lexema = ";";
+                        tokenTemp.Codigo = 37;
+                        pAnterior = 37;
+                        sigChar();
+                        break;
+                    case ':': //TOKEN 2 PUNTOS (PARA IF)
+                        tokenTemp.Lexema = ":";
+                        tokenTemp.Codigo = 38;
+                        pAnterior = 38;
+                        sigChar();
+                        break;
+                    case ',': //TOKEN COMA
+                        tokenTemp.Lexema = ",";
+                        tokenTemp.Codigo = 39;
+                        //pAnterior = 39;
+                        sigChar();
+                        break;
+                    case '%':
+                        tokenTemp.Lexema = "%";
+                        tokenTemp.Codigo = 44;
+                        pAnterior = 44;
+                        sigChar();
+                        break;
+                    case '\u0080':
+                        tokenTemp.Lexema = "FDD";
+                        tokenTemp.Codigo = 43;
+                        sigChar();
+                        break;
+                    default:
+                        tokenTemp.Lexema = "NONE";
+                        tokenTemp.Codigo = 45;
+                        sigChar();
+                        break;
+                }
+            listaATraducir.Add(tokenTemp);
+            return tokenTemp;
+        }
+        public void sigChar()
+        {
+            caracter = (char)archivo.Read();
+            contColumna++;
+            if (caracter == '\n')
+            {
+                contLineas++;
+                contColumna = 0;
+                //sigChar();
+            }
+            else if (caracter == '\uffff')
+            {
+                caracter = '\u0080';
+            }
+            else if (caracter == '\r') {
+                sigChar();
+            }
+        }
+        public void reiniciarLector()
+        {
+            archivo.DiscardBufferedData();
+            archivo.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
+            archivo.BaseStream.Position = 0;
+            caracter = (char)archivo.Read();
+            sigChar();
+        }
+
+        public void esPalabra (Token tokenTemp){
+            while (char.IsLetter(caracter) || char.IsNumber(caracter)) {
+                acum += caracter;
+                sigChar();
+                //VA IR ACUMULANDO LAS LETRAS O NUMEROS, YA QUE VARIABLES PUEDEN INCORPORAR NUMEROS
+            }
+            tokenTemp.Lexema = acum;
+            if (Lista.buscarLexema(acum) != -1) //REVISA SI EL ACUMULADO ES UNA PALABRA YA EN LOS TOKENS
+            {
+                x = Lista.buscarLexema(acum);
+                tokenTemp.Codigo = Lista.ListaTokens[x].Codigo;
+                pAnterior = x;
+            }
+            else {
+                //ver si es un IDENT o VARIABLE
+                if (variables.buscarVariable(acum) != -1)
+                {  //YA SE HABIA DECLARADO ANTERIORMENTE ESTA VARIABLE
+                    x = variables.buscarVariable(acum);
+                    tokenTemp.Codigo = 13;
+                    pAnterior = 13;
+                    tokenTemp.TamanoArreglo = variables.Elementos[x].NumElementos;
+                    tokenTemp.Tipo = variables.Elementos[x].VariableType.ToString();
+                    //sigChar();
+                    acum = "";
+                    if (caracter == '[') { //SI LA VARIABLE ES UN ARREGLO
+                        sigChar();
+                        if (char.IsNumber(caracter))
+                        {
+                            while (char.IsNumber(caracter))
+                            {
+                                acum += caracter;
+                                sigChar();
+                            }
+                            if (caracter == ']')
+                            {
+                                tokenTemp.Indice = int.Parse(acum);
+                                sigChar();
+                            }
+                            else
+                            {
+                                if (caracter == '.') { 
+                                errorLexico("Double dentro de indice", tokenTemp);
+                                }
+                                errorLexico("No se cerro corchete", tokenTemp);
+                            }
+                        }
+                        else if (char.IsLetter(caracter)) {
+                            while (char.IsLetter(caracter) || char.IsNumber(caracter))
+                            { //VA IR LEYENDO LA VARIABLE QUE SE PUSO DENTRO DE LOS CORCHETES
+                                acum += caracter;
+                                sigChar();
+                            }
+                            if (caracter == ']')
+                            {
+                                sigChar();
+                            }
+                            else {
+                                errorLexico("No se cerro corchete", tokenTemp);
+                            }
+                            if (variables.buscarVariable(acum) != -1)
+                            {   //BUSCA QUE YA HAYA SIDO DECLARADA
+                                x = variables.buscarVariable(acum);
+                                if(variables.Elementos[x].VariableType == 1) {
+                                    tokenTemp.Indice = variables.Elementos[x].Direccion;
+                                    tokenTemp.IndexVar = true;
+                                }
+                                else{
+                                    errorLexico("La variable no es entera", tokenTemp);
+                                }
+                                
+                            }
+                            else
+                            {
+                                errorLexico("No se encuentra declarada esta variable",tokenTemp);
+                            }
+
+                        }
+                    }
+                }
+                else {
+                    // NO se ha declarado la variable anteriormente
+                    if (caracter == '[')
+                    {
+                        //Es arreglo la variable que se declaro
+                        sigChar();
+                        if (!char.IsNumber(caracter))
+                        {
+                            errorLexico("Solo se puede definir arreglos con numeros enteros", tokenTemp);
+                        }
+                        else {
+                            while (char.IsNumber(caracter))
+                            {
+                                acum2 += caracter;
+                                sigChar();
+                            }
+                            if (caracter == '.')
+                            {
+                                errorLexico("Solo se puede definir arreglos con numeros enteros", tokenTemp);
+                            }
+                            if (caracter == ']')
+                            {
+                                arrsize = int.Parse(acum2);
+                                tipoVar = 10;
+                                switch (pAnterior)
+                                {
+                                    case 9:
+                                        tipoVar++;
+                                        dirtemp = 4 * arrsize;
+                                        break;
+                                    case 10:
+                                        tipoVar += 2;
+                                        dirtemp = 8 * arrsize;
+                                        break;
+                                    case 11:
+                                        tipoVar += 3;
+                                        dirtemp = 2 * arrsize;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                variables.Elementos.Add(new ElementoSegmentoDeDatos(acum, tipoVar, direccion, arrsize));
+                                direccion += dirtemp;
+                                tokenTemp.Codigo = 14;
+                                //pAnterior = 14;
+                                tokenTemp.TamanoArreglo = arrsize;
+                                tokenTemp.Tipo = tipoVar.ToString();
+                                sigChar();
+                            }
+                            else {
+                                errorLexico("No se cerro corchete", tokenTemp);
+                            }
+
+                        }
+
+                    }
+                    else {
+                        //No es arreglo la variable
+                        switch (pAnterior)
+                        {
+                            case 9:
+                                tipoVar = 1;
+                                dirtemp += 4;
+                                break;
+                            case 10:
+                                tipoVar = 2;
+                                dirtemp += 8;
+                                break;
+                            case 11:
+                                tipoVar = 3;
+                                dirtemp += 2;
+                                break;
+                            default:
+                                errorLexico($"No se reconoce esta palabra,{acum} si es variable falto poner el tipo antes",tokenTemp);
+                                break;
+                        }
+                        variables.Elementos.Add(new ElementoSegmentoDeDatos(acum,tipoVar,direccion,0));
+                        direccion += dirtemp;
+                        tokenTemp.Codigo = 14;
+                        //pAnterior = 14;
+                        tokenTemp.TamanoArreglo = 0;
+                        tokenTemp.Tipo = tipoVar.ToString();
+                    }
+
+                }
+            }
+            acum = "";
+            acum2 = "";
+        }
+
+        public void esNumero(Token tokentemp) {
+            while (char.IsNumber(caracter)) {
+                //LEO CHARS HASTA QUE ME TOPE A ALGO QUE NO ES NUMERO
+                acum += caracter;
+                sigChar();
+            }
+            acum2 += acum; //GUARDO EL VALOR QUE LLEVO
+            acum = "";
+            if (caracter == '.')
+            { //VEO SI LO QUE PONE ES UN DOUBLE
+                sigChar();
+                if (char.IsNumber(caracter))
+                {   //EN EFECTO ES UN DOUBLE
+                    acum2 += '.';
+                    while (char.IsNumber(caracter))
+                    {
+                        //LEO TODOS LOS DECIMALES QUE PUEDO
+                        acum += caracter;
+                        sigChar();
+                    }
+                    acum2 += acum;
+                    tokentemp.Lexema = "Constante Double";
+                    tokentemp.Tipo = "2";
+                    tokentemp.Valor = acum2;
+
+                }
+            }
+            else {
+                tokentemp.Lexema = "Constante Entero";
+                tokentemp.Tipo = "1";
+                tokentemp.Valor = acum2;
+            }
+            acum = "";
+            acum2 = "";
+            
+        }
+        public void errorLexico(string msg, Token tokenTemp) {
+            Console.WriteLine("En linea " + tokenTemp.Linea + " Columna " + tokenTemp.Columna + ": " + msg);
         }
 
 
-        
+
     }
 }
-//foreach (string palabra in linea.Split())
-//{
-//    foreach (char letra in palabra)
-//    {
-//        acum += letra;
-//        if (ListaTokens.ContainsKey(acum))
-//        {
-//            Console.Write(ListaTokens[acum] + "\t");
-//            pAnterior = ListaTokens[acum];
-//            tokenTemp.Lexema = acum;
-//            tokenTemp.Codigo = ListaTokens[acum];
-//            tokens.Add(tokenTemp);
-//            acum = "";
-
-//        }
-//    }
-
-//}
-//Console.WriteLine("\n ===================");
-//Dictionary<string, int> ListaTokens = new Dictionary<string, int> {
-//            //INSTRUCCIONES 1-9
-//            {"START",1 },
-//            {"END",2},
-//            {"READ", 3},
-//            {"PRINT", 4},
-//            {"PRINTNL", 5 },
-//                //CONDICIONALES 6-7
-//            {"IF",6 },
-//            {"ELSE",7 },
-//                //FIN CONDICIONALES
-//                //CICLOS 8-9
-//            {"FOR",8 },
-//            {"WHILE",9 },
-//                //FIN CICLOS
-//            //FIN INSTRUCCIONES
-
-//            //DECLARACION/DETECCION DE VARIABLES 10-17
-//            {"INT",10 },
-//            {"DOUBLE",11},
-//            {"STRING",12},
-//            {"ARRAY",13}, // => Tendria que revisar con un metodo, seria TIPO[CANTIDAD]
-//            {"VARIABLE",14 }, // => para poner este token, seria revisar si esa variable especifica ha sido definida anteriormente.
-//            {"DEFINICION",15 }, // => Despues revisar que despues del tipo sea palabras y no nomas letras o alguna condicional etc.
-//            {"COMENTARIO",16}, //PONER un true que si se detecta $ todo lo que le siga hasta encontrar otro $ es comentario
-//            {"CONSTANTE",17 }, //Revisar con un tryparse si se puede hacer en int o double.
-
-//            //FIN DECLARACION/DETECCION VARIABLES
-//            //OPERADORES RELACIONALES 18-26
-//            {"==",18 },
-//            {"!=",19},
-//            {"<=",20 },
-//            {">=",21 },
-//            {"<",22 },
-//            {">",23 },
-//            {"AND",24},
-//            {"OR",25},
-//            {"NOT",26},
-//            //FIN OPERADORES RELACIONALES
-
-//            //OPERADORES ARITMETICOS Y CONTENEDORES 27-36
-//            {"=",27 },
-//            {"+",28 },
-//            {"-",29 },
-//            {"*",30 },
-//            {"/",31 },
-//            {"%",32 },
-//            {"(",33 },
-//            {")",34 },
-//            {"{",35 },
-//            {"}",36 },
-//            {"“",47 },
-//            {"”",48 },
-//            {";",50 }
-
-//            //FIN OPERADORES ARITMETICOS Y CONTENEDORES
-//        };
-//while ((linea = archivo.ReadLine()) != null)
-//{
-//    linea = linea.TrimEnd(';');
-//    foreach (string palabra in linea.Split())
-//    {
-//        if (int.TryParse(palabra, out int output) || double.TryParse(palabra, out double salida)) //if revisa si es una constante
-//        {
-//            Console.Write(ListaTokens["CONSTANTE"] + "\t");
-//            pAnterior = ListaTokens["CONSTANTE"];
-//        }
-//        else
-//        {
-//            if (ListaTokens.ContainsKey(palabra) || palabra.Contains("[")) //IF para revisar si es un arreglo, ya sea definicion de uno o la variable o una palabra reservada
-//            {
-//                if (palabra.Contains("["))
-//                {
-//                    if (Variables.Contains(palabra.Split('[')[0])) //IF para revisar si es una variable ya definida
-//                    {
-//                        Console.Write(ListaTokens["VARIABLE"] + "\t");
-//                        pAnterior = ListaTokens["VARIABLE"];
-//                    }
-//                    else
-//                    {
-//                        if (ListaTokens.ContainsKey(palabra.Split('[', ']')[0]) && int.TryParse(palabra.Split('[', ']')[1], out int result))
-//                        { //Este if es por si es un INT[] o DOUBLE[]
-//                            Console.Write(ListaTokens["ARRAY"] + "\t");
-//                            pAnterior = ListaTokens["ARRAY"];
-//                        }
-
-//                    }
-//                }
-//                else
-//                { //ES una palabra reservada
-//                    Console.Write(ListaTokens[palabra] + "\t");
-//                    pAnterior = ListaTokens[palabra];
-//                }
-//            }
-//            else
-//            {
-//                if (Variables.Contains(palabra)) //IF para revisar si es una variable ya definida
-//                {
-//                    Console.Write(ListaTokens["VARIABLE"] + "\t");
-//                    pAnterior = ListaTokens["VARIABLE"];
-//                }
-//                else
-//                {
-//                    if (pAnterior >= 10 && pAnterior <= 13) //IF PARA REVISAR SI LA PALABRA ANTERIOR ERA PARA DEFINIR UNA VARIABLE
-//                    {
-//                        if (palabra[palabra.Length - 1] == ';')
-//                        {
-//                            //palabra.Remove(palabra.Length-1,1);
-//                            temp = palabra.TrimEnd(';');
-//                            Variables.Add(temp);
-//                            Console.Write(ListaTokens["DEFINICION"] + "\t");
-//                            pAnterior = ListaTokens["DEFINICION"];
-//                        }
-//                        else
-//                        {
-//                            Variables.Add(palabra);
-//                            Console.Write(ListaTokens["DEFINICION"] + "\t");
-//                            pAnterior = ListaTokens["DEFINICION"];
-//                        }
-
-//                    }
-//                    else
-//                    {
-//                        Console.Write($"Palabra no reconocida en linea {contLineas}" + "\t");
-//                    }
-//                }
-
-//            }
-//        }
-//    }
-//    contLineas++;
-//    Console.WriteLine(" ");
-//}
 

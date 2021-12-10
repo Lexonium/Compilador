@@ -1,16 +1,21 @@
 ﻿START
 INT i;
 INT matriculas[10];
-i = 0;
+$AQUI TERMINA LAS DEFINICIONES$
+i=0;
+IF i < 10 {
+	PRINT "HOLA";
+}
+i = 0 + 10 * 5;
 FOR (i : 10)
 {
 	PRINTNL "Inserte Matricula " , i;
-	READ matricula[i]
+	READ matriculas[i];
 }
 i = 0;
 FOR (i : 10)
 {
-	PRINTNL "Matricula [" , i , "]: ", matricula[i];
+	PRINTNL "Matricula[" , i , "]: ", matriculas[i];
 }
 
 END
