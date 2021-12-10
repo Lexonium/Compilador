@@ -529,6 +529,13 @@ public bool main()
             contadorEtiquetas.Push(contCodigo);
             while (tSiguiente.Codigo != 45 && tSiguiente.Codigo != 1 && tSiguiente.Codigo != 34)
             {
+                if (tSiguiente.Codigo == 2) {
+                    verinstruccion.Push(queFor.Peek());
+                    contCodigo += 3;
+                    verinstruccion.Push("POPIDX");
+                    contCodigo += 1;
+                }
+
                 instruccion();
             }
             verinstruccion.Push("INC"+queFor.Peek());
@@ -578,7 +585,6 @@ public bool main()
                 instruccion();
             }
             contCodigo += 3;
-            contadorEtiquetas.Push(contCodigo);
             espera(Listado.ListaTokens[34]);
             while (queIF.Count > 0)
             {
@@ -638,7 +644,8 @@ public bool main()
                 espera(Listado.ListaTokens[34]);
             }
             contadorEtiquetas.Push(contCodigo);
-            
+            contadorEtiquetas.Push(contCodigo);
+
         }
 
         private void condicion()
@@ -932,6 +939,10 @@ public bool main()
                             contCodigo += 3;
                             break;
                         case 11:
+                            verinstruccion.Push(queFor.Peek());
+                            contCodigo += 3;
+                            verinstruccion.Push("POPIDX");
+                            contCodigo += 1;
                             verinstruccion.Push("PRTAI " + tSiguiente.Lexema);
                             contCodigo += 3;
                             break;
@@ -986,6 +997,10 @@ public bool main()
                             contCodigo += 3;
                             break;
                         case 11:
+                            verinstruccion.Push(queFor.Peek());
+                            contCodigo += 3;
+                            verinstruccion.Push("POPIDX");
+                            contCodigo += 1;
                             verinstruccion.Push("PRTAI " + tSiguiente.Lexema);
                             contCodigo += 3;
                             break;

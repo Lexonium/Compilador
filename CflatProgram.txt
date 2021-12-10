@@ -6,7 +6,7 @@ i=0;
 IF i < 10 {
 	PRINT "HOLA";
 }
-i = 0 + 10 * 5;
+i = 0;
 FOR (i : 10)
 {
 	PRINTNL "Inserte Matricula " , i;
