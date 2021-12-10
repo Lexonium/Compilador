@@ -10,17 +10,29 @@ namespace Compilador
     {
         private string _lexema;
         private string _tipo;
-        private int? _direccion;
+        private int _indice;
         private string _descripcion;
         private int? _tamArreglo;
-        private int? _codigo;
+        private int _codigo;
         private string? _valor;
-        private int? _varType;
+        private int _linea;
+        private int _columna;
+        private bool indexVar = false;
 
         public string Lexema
         {
             get { return _lexema; }
             set { _lexema = value; }
+        }
+        public string? Valor
+        {
+            get { return _valor; }
+            set { _valor = value; }
+        }
+        public bool IndexVar
+        {
+            get { return indexVar; }
+            set { indexVar = value; }
         }
         public string Descripcion
         {
@@ -32,29 +44,30 @@ namespace Compilador
             get { return _tipo; }
             set { _tipo = value; }
         }
-        public int? Direccion
+        public int Indice 
         {
-            get { return _direccion; }
-            set { _direccion = value; }
+            get { return _indice; }
+            set { _indice = value; }
         }
         public int? TamanoArreglo
         {
             get { return _tamArreglo; }
             set { _tamArreglo = value; }
         }
-        public int? Codigo
+        public int Codigo
         {
             get { return _codigo; }
             set { _codigo = value; }
         }
-        public void reiniciar()
+        public int Linea
         {
-            _lexema = null; 
-            _direccion = null;
-            _tamArreglo = null;
-            _codigo = null;
-            _valor = null;
-            _varType = null;
+            get { return _linea; }
+            set { _linea = value; }
+        }
+        public int Columna
+        {
+            get { return _columna; }
+            set { _columna = value; }
         }
         public void imprimir()
         {
@@ -68,6 +81,12 @@ namespace Compilador
         public Token()
         {
 
+        }
+        public Token(string Lexema, int Codigo, string Tipo, int TamanoArreglo) {
+            this.Lexema = Lexema;
+            this.Codigo = Codigo;
+            this.Tipo = Tipo;
+            this.TamanoArreglo = TamanoArreglo;
         }
     }
 }
