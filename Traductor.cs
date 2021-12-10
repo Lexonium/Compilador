@@ -947,10 +947,18 @@ public bool main()
                             contCodigo += 3;
                             break;
                         case 12:
+                            verinstruccion.Push(queFor.Peek());
+                            contCodigo += 3;
+                            verinstruccion.Push("POPIDX");
+                            contCodigo += 1;
                             verinstruccion.Push("PRTAD " + tSiguiente.Lexema);
                             contCodigo += 3;
                             break;
                         case 13:
+                            verinstruccion.Push(queFor.Peek());
+                            contCodigo += 3;
+                            verinstruccion.Push("POPIDX");
+                            contCodigo += 1;
                             verinstruccion.Push("PRTAS " + tSiguiente.Lexema);
                             contCodigo += 3;
                             break;
@@ -1005,10 +1013,18 @@ public bool main()
                             contCodigo += 3;
                             break;
                         case 12:
+                            verinstruccion.Push(queFor.Peek());
+                            contCodigo += 3;
+                            verinstruccion.Push("POPIDX");
+                            contCodigo += 1;
                             verinstruccion.Push("PRTAD " + tSiguiente.Lexema);
                             contCodigo += 3;
                             break;
                         case 13:
+                            verinstruccion.Push(queFor.Peek());
+                            contCodigo += 3;
+                            verinstruccion.Push("POPIDX");
+                            contCodigo += 1;
                             verinstruccion.Push("PRTAS " + tSiguiente.Lexema);
                             contCodigo += 3;
                             break;
