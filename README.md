@@ -1,1 +1,2 @@
 # Compilador
+The final proyect of a compilator class. Throughout the semester with my teammates and the rest of the class we developed a basic assembly language and a variant of c we called c flat in order to test our skills and develop a compiler for this language as well as a virtual machine to run it. This is the compiler part of the proyect that takes in a text file of cflat and converts it into a tsn file (our assembly language) in order for our virtual machine to run.
